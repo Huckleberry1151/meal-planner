@@ -507,30 +507,75 @@
                 recipes = [
                     {
                         id: Date.now() + 1,
+                        name: "Avocado Toast",
+                        cuisine: "American",
+                        prepTime: 10,
+                        servings: 2,
+                        ingredients: "2 slices whole grain bread\n1 ripe avocado\n1 lemon\nSea salt\nRed pepper flakes\nCherry tomatoes (optional)\nFeta cheese (optional)",
+                        instructions: "1. Toast bread until golden\n2. Mash avocado with lemon juice and salt\n3. Spread avocado on toast\n4. Top with red pepper flakes, tomatoes, and feta\n5. Serve immediately"
+                    },
+                    {
+                        id: Date.now() + 2,
+                        name: "Yogurt Parfait",
+                        cuisine: "American",
+                        prepTime: 5,
+                        servings: 2,
+                        ingredients: "2 cups Greek yogurt\n1 cup granola\n1 cup mixed berries (strawberries, blueberries, raspberries)\n2 tbsp honey\nMint leaves for garnish",
+                        instructions: "1. Layer yogurt in glass or bowl\n2. Add a layer of granola\n3. Add fresh berries\n4. Repeat layers\n5. Drizzle with honey\n6. Garnish with mint"
+                    },
+                    {
+                        id: Date.now() + 3,
+                        name: "Scrambled Eggs with Toast",
+                        cuisine: "American",
+                        prepTime: 10,
+                        servings: 2,
+                        ingredients: "4 eggs\n2 tbsp butter\n2 tbsp milk\nSalt and pepper\n2 slices bread\nChives (optional)",
+                        instructions: "1. Beat eggs with milk, salt, and pepper\n2. Melt butter in pan over medium heat\n3. Pour eggs and gently stir\n4. Toast bread\n5. Serve eggs on toast\n6. Garnish with chives"
+                    },
+                    {
+                        id: Date.now() + 4,
                         name: "Spaghetti Carbonara",
                         cuisine: "Italian",
                         prepTime: 20,
                         servings: 4,
                         ingredients: "400g spaghetti\n200g pancetta\n4 eggs\n100g parmesan\nBlack pepper\nSalt",
-                        instructions: "1. Cook spaghetti\n2. Fry pancetta\n3. Mix eggs and cheese\n4. Combine all ingredients"
+                        instructions: "1. Cook spaghetti in salted boiling water\n2. Fry pancetta until crispy\n3. Mix eggs and parmesan in bowl\n4. Drain pasta, reserve 1 cup water\n5. Combine hot pasta with pancetta\n6. Remove from heat, add egg mixture\n7. Toss quickly, add pasta water if needed\n8. Season with black pepper"
                     },
                     {
-                        id: Date.now() + 2,
+                        id: Date.now() + 5,
                         name: "Chicken Stir Fry",
                         cuisine: "Asian",
                         prepTime: 25,
                         servings: 4,
-                        ingredients: "500g chicken breast\n2 bell peppers\n1 onion\nSoy sauce\nGinger\nGarlic\nVegetables",
-                        instructions: "1. Cut chicken into strips\n2. Stir fry chicken\n3. Add vegetables\n4. Add sauce and serve"
+                        ingredients: "500g chicken breast\n2 bell peppers\n1 onion\n3 tbsp soy sauce\n1 tbsp ginger (minced)\n3 cloves garlic (minced)\n2 cups mixed vegetables\n2 tbsp vegetable oil\nSesame seeds",
+                        instructions: "1. Cut chicken into thin strips\n2. Heat oil in wok or large pan\n3. Stir fry chicken until golden\n4. Add garlic and ginger, cook 30 seconds\n5. Add vegetables, stir fry 5 minutes\n6. Add soy sauce and toss\n7. Garnish with sesame seeds\n8. Serve over rice"
                     },
                     {
-                        id: Date.now() + 3,
+                        id: Date.now() + 6,
                         name: "Greek Salad",
                         cuisine: "Mediterranean",
                         prepTime: 15,
                         servings: 4,
-                        ingredients: "4 tomatoes\n1 cucumber\n1 red onion\n200g feta cheese\nOlives\nOlive oil\nOregano",
-                        instructions: "1. Chop vegetables\n2. Add feta and olives\n3. Drizzle with olive oil\n4. Season with oregano"
+                        ingredients: "4 tomatoes\n1 cucumber\n1 red onion\n200g feta cheese\n1 cup kalamata olives\n3 tbsp olive oil\n1 tbsp red wine vinegar\nOregano\nSalt and pepper",
+                        instructions: "1. Chop tomatoes and cucumber into chunks\n2. Slice red onion thinly\n3. Combine vegetables in bowl\n4. Add olives and crumbled feta\n5. Drizzle with olive oil and vinegar\n6. Season with oregano, salt, and pepper\n7. Toss gently and serve"
+                    },
+                    {
+                        id: Date.now() + 7,
+                        name: "Tacos al Pastor",
+                        cuisine: "Mexican",
+                        prepTime: 30,
+                        servings: 4,
+                        ingredients: "500g pork shoulder (thinly sliced)\n2 cups pineapple (diced)\n1 onion\nCilantro\nLimes\n8 corn tortillas\n2 tbsp chili powder\n1 tsp cumin\n2 cloves garlic",
+                        instructions: "1. Marinate pork with chili powder, cumin, and garlic\n2. Cook pork in hot pan until crispy\n3. Warm tortillas\n4. Dice onion and chop cilantro\n5. Add pineapple to pork, cook 2 minutes\n6. Assemble tacos with pork, pineapple, onion, cilantro\n7. Squeeze lime juice over tacos\n8. Serve immediately"
+                    },
+                    {
+                        id: Date.now() + 8,
+                        name: "Caprese Sandwich",
+                        cuisine: "Italian",
+                        prepTime: 10,
+                        servings: 2,
+                        ingredients: "1 baguette or ciabatta\n2 large tomatoes (sliced)\n200g fresh mozzarella (sliced)\nFresh basil leaves\n2 tbsp balsamic glaze\n2 tbsp olive oil\nSalt and pepper",
+                        instructions: "1. Slice bread lengthwise\n2. Drizzle olive oil on both sides\n3. Layer mozzarella and tomato slices\n4. Add fresh basil leaves\n5. Drizzle with balsamic glaze\n6. Season with salt and pepper\n7. Close sandwich and cut in half"
                     }
                 ];
                 saveData();
@@ -815,6 +860,17 @@
             item.classList.toggle('checked');
         }
 
+        // Helper function to format date/time in local timezone (no UTC conversion)
+        function formatDateTimeLocal(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            const seconds = String(date.getSeconds()).padStart(2, '0');
+            return `${year}${month}${day}T${hours}${minutes}${seconds}`;
+        }
+
         // Export functions
         function exportToCalendar() {
             const dates = getWeekDates();
@@ -838,8 +894,9 @@
                 const dateTime = new Date(meal.date + 'T' + mealTimes[meal.mealType]);
                 const endTime = new Date(dateTime.getTime() + (recipe.prepTime || 30) * 60000);
                 
-                const dtstart = dateTime.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-                const dtend = endTime.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+                // Use local time format without timezone conversion
+                const dtstart = formatDateTimeLocal(dateTime);
+                const dtend = formatDateTimeLocal(endTime);
                 const dtstamp = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
                 
                 events.push(`BEGIN:VEVENT
@@ -859,7 +916,6 @@ PRODID:-//Meal Planner//EN
 CALSCALE:GREGORIAN
 METHOD:PUBLISH
 X-WR-CALNAME:Meal Plan
-X-WR-TIMEZONE:UTC
 ${events.join('\n')}
 END:VCALENDAR`;
             
@@ -883,24 +939,31 @@ END:VCALENDAR`;
                 }
             });
             
+            if (ingredients.size === 0) {
+                alert('No ingredients found. Add meals to your planner first!');
+                return;
+            }
+            
             const todos = Array.from(ingredients).map((ing, i) => {
                 const dtstamp = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-                return `BEGIN:VTODO
-UID:shopping-${i}@mealplanner
-DTSTAMP:${dtstamp}
-SUMMARY:${ing}
-STATUS:NEEDS-ACTION
-PRIORITY:5
+                // Escape special characters in summary
+                const escapedIng = ing.replace(/\\/g, '\\\\').replace(/,/g, '\\,').replace(/;/g, '\\;');
+                return `BEGIN:VTODO\r
+UID:shopping-${i}-${Date.now()}@mealplanner\r
+DTSTAMP:${dtstamp}\r
+SUMMARY:${escapedIng}\r
+STATUS:NEEDS-ACTION\r
+PERCENT-COMPLETE:0\r
 END:VTODO`;
             });
             
-            const ical = `BEGIN:VCALENDAR
-VERSION:2.0
-PRODID:-//Meal Planner//EN
-CALSCALE:GREGORIAN
-METHOD:PUBLISH
-X-WR-CALNAME:Shopping List
-${todos.join('\n')}
+            const ical = `BEGIN:VCALENDAR\r
+VERSION:2.0\r
+PRODID:-//Meal Planner//EN\r
+CALSCALE:GREGORIAN\r
+METHOD:PUBLISH\r
+X-WR-CALNAME:Shopping List - Meal Planner\r
+${todos.join('\r\n')}\r
 END:VCALENDAR`;
             
             downloadFile(ical, `shopping_list_${startDate}.ics`, 'text/calendar');
