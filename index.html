@@ -860,6 +860,13 @@
             item.classList.toggle('checked');
         }
 
+        // Helper function to create date object from date string without timezone issues
+        function createLocalDate(dateString, timeString) {
+            const [year, month, day] = dateString.split('-').map(Number);
+            const [hours, minutes, seconds] = timeString.split(':').map(Number);
+            return new Date(year, month - 1, day, hours, minutes, seconds);
+        }
+
         // Helper function to format date/time in local timezone (no UTC conversion)
         function formatDateTimeLocal(date) {
             const year = date.getFullYear();
@@ -879,6 +886,11 @@
             
             const weekMeals = mealPlan.filter(m => m.date >= startDate && m.date <= endDate);
             
+            if (weekMeals.length === 0) {
+                alert('No meals planned for this week. Add some meals first!');
+                return;
+            }
+            
             const mealTimes = {
                 'Breakfast': '08:00:00',
                 'Lunch': '12:00:00',
@@ -891,33 +903,42 @@
                 const recipe = recipes.find(r => r.id === meal.recipeId);
                 if (!recipe) return;
                 
-                const dateTime = new Date(meal.date + 'T' + mealTimes[meal.mealType]);
+                // Create date in local timezone explicitly
+                const dateTime = createLocalDate(meal.date, mealTimes[meal.mealType]);
                 const endTime = new Date(dateTime.getTime() + (recipe.prepTime || 30) * 60000);
                 
-                // Use local time format without timezone conversion
+                // Format in local time without timezone conversion
                 const dtstart = formatDateTimeLocal(dateTime);
                 const dtend = formatDateTimeLocal(endTime);
                 const dtstamp = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
                 
-                events.push(`BEGIN:VEVENT
-UID:${dtstart}-${recipe.name.replace(/\s+/g, '-')}@mealplanner
-DTSTAMP:${dtstamp}
-DTSTART:${dtstart}
-DTEND:${dtend}
-SUMMARY:${meal.mealType}: ${recipe.name}
-DESCRIPTION:Prep time: ${recipe.prepTime || 30} minutes
-LOCATION:Home
-END:VEVENT`);
+                // Build event with proper line endings
+                const event = [
+                    'BEGIN:VEVENT',
+                    `UID:${dtstart}-${recipe.name.replace(/\s+/g, '-')}@mealplanner`,
+                    `DTSTAMP:${dtstamp}`,
+                    `DTSTART:${dtstart}`,
+                    `DTEND:${dtend}`,
+                    `SUMMARY:${meal.mealType}: ${recipe.name}`,
+                    `DESCRIPTION:Prep time: ${recipe.prepTime || 30} minutes`,
+                    'LOCATION:Home',
+                    'END:VEVENT'
+                ].join('\r\n');
+                
+                events.push(event);
             });
             
-            const ical = `BEGIN:VCALENDAR
-VERSION:2.0
-PRODID:-//Meal Planner//EN
-CALSCALE:GREGORIAN
-METHOD:PUBLISH
-X-WR-CALNAME:Meal Plan
-${events.join('\n')}
-END:VCALENDAR`;
+            // Build calendar with proper line endings
+            const ical = [
+                'BEGIN:VCALENDAR',
+                'VERSION:2.0',
+                'PRODID:-//Meal Planner//EN',
+                'CALSCALE:GREGORIAN',
+                'METHOD:PUBLISH',
+                'X-WR-CALNAME:Meal Plan',
+                events.join('\r\n'),
+                'END:VCALENDAR'
+            ].join('\r\n');
             
             downloadFile(ical, `meal_plan_${startDate}.ics`, 'text/calendar');
         }
@@ -944,43 +965,91 @@ END:VCALENDAR`;
                 return;
             }
             
+            const now = new Date();
+            const dtstamp = formatDateTimeLocal(now) + 'Z';
+            
             const todos = Array.from(ingredients).map((ing, i) => {
-                const dtstamp = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-                // Escape special characters in summary
-                const escapedIng = ing.replace(/\\/g, '\\\\').replace(/,/g, '\\,').replace(/;/g, '\\;');
-                return `BEGIN:VTODO\r
-UID:shopping-${i}-${Date.now()}@mealplanner\r
-DTSTAMP:${dtstamp}\r
-SUMMARY:${escapedIng}\r
-STATUS:NEEDS-ACTION\r
-PERCENT-COMPLETE:0\r
-END:VTODO`;
+                // Escape special characters per iCalendar spec
+                const escapedIng = ing
+                    .replace(/\\/g, '\\\\')
+                    .replace(/\n/g, '\\n')
+                    .replace(/,/g, '\\,')
+                    .replace(/;/g, '\\;');
+                
+                // Build VTODO with proper line endings
+                const todo = [
+                    'BEGIN:VTODO',
+                    `UID:shopping-${i}-${Date.now()}@mealplanner`,
+                    `DTSTAMP:${dtstamp}`,
+                    `SUMMARY:${escapedIng}`,
+                    'STATUS:NEEDS-ACTION',
+                    'PERCENT-COMPLETE:0',
+                    'END:VTODO'
+                ].join('\r\n');
+                
+                return todo;
             });
             
-            const ical = `BEGIN:VCALENDAR\r
-VERSION:2.0\r
-PRODID:-//Meal Planner//EN\r
-CALSCALE:GREGORIAN\r
-METHOD:PUBLISH\r
-X-WR-CALNAME:Shopping List - Meal Planner\r
-${todos.join('\r\n')}\r
-END:VCALENDAR`;
+            // Build calendar with proper line endings
+            const ical = [
+                'BEGIN:VCALENDAR',
+                'VERSION:2.0',
+                'PRODID:-//Meal Planner//EN',
+                'CALSCALE:GREGORIAN',
+                'METHOD:PUBLISH',
+                'X-WR-CALNAME:Shopping List',
+                todos.join('\r\n'),
+                'END:VCALENDAR'
+            ].join('\r\n');
             
             downloadFile(ical, `shopping_list_${startDate}.ics`, 'text/calendar');
         }
 
         function downloadFile(content, filename, mimeType) {
-            const blob = new Blob([content], { type: mimeType });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = filename;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
+            // Create blob with explicit charset
+            const blob = new Blob([content], { type: `${mimeType};charset=utf-8` });
             
-            alert(`Downloaded! Open the file to import to Apple Calendar/Reminders.`);
+            // Check if we're on iOS/Safari
+            const isIOSorSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent) || 
+                                   /iPad|iPhone|iPod/.test(navigator.userAgent);
+            
+            if (isIOSorSafari) {
+                // For Safari/iOS, use a different approach
+                const reader = new FileReader();
+                reader.onload = function() {
+                    const url = reader.result;
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    
+                    // Clean up
+                    setTimeout(() => {
+                        document.body.removeChild(a);
+                    }, 100);
+                };
+                reader.readAsDataURL(blob);
+            } else {
+                // Standard approach for other browsers
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                
+                // Clean up
+                setTimeout(() => {
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                }, 100);
+            }
+            
+            // Show success message
+            setTimeout(() => {
+                alert(`✅ Downloaded ${filename}\n\nOn iPhone/iPad: Tap "Open in..." then select Calendar or Reminders.\nOn Mac: Double-click the file to import.`);
+            }, 200);
         }
 
         // Initialize
