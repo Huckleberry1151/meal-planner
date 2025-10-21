@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recipe & Meal Planner</title>
+    <style>
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+        }
+        
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            min-height: 100vh;
+            padding: 10px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        h1 { 
+            color: #f5576c;
+            margin-bottom: 5px;
+            font-size: 2em;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 0.95em;
+        }
+        
+        .nav-tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .tab {
+            padding: 12px 20px;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-size: 0.95em;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        
+        .tab.active {
+            color: #f5576c;
+            border-bottom-color: #f5576c;
+        }
+        
+        .tab:hover {
+            color: #f5576c;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .recipe-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .recipe-card {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 15px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .recipe-card:hover {
+            transform: translateY(-3px);
+            border-color: #f5576c;
+            box-shadow: 0 8px 20px rgba(245, 87, 108, 0.2);
+        }
+        
+        .recipe-name {
+            font-size: 1.15em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .recipe-meta {
+            display: flex;
+            gap: 10px;
+            color: #666;
+            font-size: 0.85em;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: transform 0.2s;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(245, 87, 108, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+        }
+        
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 0.85em;
+        }
+        
+        .week-planner {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 12px;
+            margin-top: 15px;
+        }
+        
+        .day-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 12px;
+            min-height: 350px;
+        }
+        
+        .day-header {
+            font-weight: bold;
+            color: #f5576c;
+            margin-bottom: 12px;
+            font-size: 1em;
+            text-align: center;
+        }
+        
+        .meal-slot {
+            background: white;
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 8px;
+            margin-bottom: 8px;
+            min-height: 70px;
+        }
+        
+        .meal-slot.filled {
+            border-style: solid;
+            border-color: #f5576c;
+        }
+        
+        .meal-type {
+            font-size: 0.8em;
+            color: #666;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .meal-name {
+            font-weight: bold;
+            color: #333;
+            font-size: 0.9em;
+        }
+        
+        .form-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+        }
+        
+        .form-group {
+            margin-bottom: 12px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 4px;
+            color: #333;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 0.95em;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #f5576c;
+        }
+        
+        .export-section {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 20px;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+        }
+        
+        .export-section h3 {
+            color: white;
+            margin-bottom: 5px;
+        }
+        
+        .export-section p {
+            color: rgba(255,255,255,0.9);
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+        
+        .export-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .apple-btn {
+            background: white;
+            color: #333;
+            padding: 12px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform 0.2s;
+            flex: 1;
+            min-width: 150px;
+            justify-content: center;
+            cursor: pointer;
+            border: none;
+            font-size: 0.9em;
+        }
+        
+        .apple-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        .shopping-list {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 15px;
+        }
+        
+        .ingredient-item {
+            padding: 10px;
+            background: white;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .ingredient-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+        }
+        
+        .ingredient-item.checked label {
+            text-decoration: line-through;
+            color: #999;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .close-btn {
+            background: #e0e0e0;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2em;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+        
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        
+        @media (max-width: 768px) {
+            h1 { font-size: 1.6em; }
+            .container { padding: 15px; }
+            .grid-2 { grid-template-columns: 1fr; }
+            .recipe-grid { grid-template-columns: 1fr; }
+            .week-planner { grid-template-columns: 1fr; }
+            .export-buttons { flex-direction: column; }
+            .apple-btn { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🍳 Recipe & Meal Planner</h1>
+        <p class="subtitle">Plan your meals and sync with Apple Calendar & Reminders</p>
+        
+        <div class="nav-tabs">
+            <button class="tab active" onclick="showTab('recipes')">📚 Recipes</button>
+            <button class="tab" onclick="showTab('planner')">📅 Week Planner</button>
+            <button class="tab" onclick="showTab('shopping')">🛒 Shopping List</button>
+            <button class="tab" onclick="showTab('add')">➕ Add Recipe</button>
+        </div>
+
+        <!-- Recipes Tab -->
+        <div id="recipes" class="tab-content active">
+            <h2>My Recipe Collection</h2>
+            <div id="recipeGrid" class="recipe-grid"></div>
+        </div>
+
+        <!-- Week Planner Tab -->
+        <div id="planner" class="tab-content">
+            <h2>This Week's Meal Plan</h2>
+            <p style="color: #666; margin-bottom: 15px;" id="weekRange"></p>
+            <div id="weekPlanner" class="week-planner"></div>
+
+            <div class="export-section">
+                <div>
+                    <h3>🍎 Export to Apple</h3>
+                    <p>Sync your meal plan to Apple Calendar and shopping list to Reminders</p>
+                </div>
+                <div class="export-buttons">
+                    <button onclick="exportToCalendar()" class="apple-btn">
+                        📅 Export to Calendar
+                    </button>
+                    <button onclick="exportToReminders()" class="apple-btn">
+                        ✅ Export to Reminders
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Shopping List Tab -->
+        <div id="shopping" class="tab-content">
+            <h2>Shopping List</h2>
+            <p style="color: #666; margin-bottom: 15px;">Ingredients needed for this week's meals</p>
+            <div id="shoppingList" class="shopping-list"></div>
+            <div style="margin-top: 15px;">
+                <button onclick="exportToReminders()" class="btn">📲 Export to Apple Reminders</button>
+            </div>
+        </div>
+
+        <!-- Add Recipe Tab -->
+        <div id="add" class="tab-content">
+            <h2>Add New Recipe</h2>
+            <div class="form-section">
+                <form onsubmit="addRecipe(event)">
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label>Recipe Name</label>
+                            <input type="text" id="recipeName" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Cuisine Type</label>
+                            <select id="recipeCuisine" required>
+                                <option value="Italian">Italian</option>
+                                <option value="Asian">Asian</option>
+                                <option value="Mexican">Mexican</option>
+                                <option value="Mediterranean">Mediterranean</option>
+                                <option value="American">American</option>
+                                <option value="Indian">Indian</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Prep Time (minutes)</label>
+                            <input type="number" id="recipePrepTime" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Servings</label>
+                            <input type="number" id="recipeServings" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Ingredients (one per line)</label>
+                        <textarea id="recipeIngredients" rows="6" required placeholder="400g spaghetti&#10;200g bacon&#10;4 eggs"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Instructions (one step per line)</label>
+                        <textarea id="recipeInstructions" rows="6" required placeholder="1. Boil water&#10;2. Cook pasta&#10;3. Fry bacon"></textarea>
+                    </div>
+                    <button type="submit" class="btn">Add Recipe</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recipe Detail Modal -->
+    <div id="recipeModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalRecipeName"></h2>
+                <button class="close-btn" onclick="closeModal()">×</button>
+            </div>
+            <div id="modalRecipeContent"></div>
+        </div>
+    </div>
+
+    <!-- Meal Selection Modal -->
+    <div id="mealModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Select Recipe</h2>
+                <button class="close-btn" onclick="closeMealModal()">×</button>
+            </div>
+            <div id="mealModalRecipes"></div>
+        </div>
+    </div>
+
+    <script>
+        // Data storage
+        let recipes = [];
+        let mealPlan = [];
+        let selectedMealSlot = null;
+
+        // Initialize with sample data if empty
+        function initializeData() {
+            const stored = localStorage.getItem('mealPlannerData');
+            if (stored) {
+                const data = JSON.parse(stored);
+                recipes = data.recipes || [];
+                mealPlan = data.mealPlan || [];
+            } else {
+                recipes = [
+                    {
+                        id: Date.now() + 1,
+                        name: "Spaghetti Carbonara",
+                        cuisine: "Italian",
+                        prepTime: 20,
+                        servings: 4,
+                        ingredients: "400g spaghetti\n200g pancetta\n4 eggs\n100g parmesan\nBlack pepper\nSalt",
+                        instructions: "1. Cook spaghetti\n2. Fry pancetta\n3. Mix eggs and cheese\n4. Combine all ingredients"
+                    },
+                    {
+                        id: Date.now() + 2,
+                        name: "Chicken Stir Fry",
+                        cuisine: "Asian",
+                        prepTime: 25,
+                        servings: 4,
+                        ingredients: "500g chicken breast\n2 bell peppers\n1 onion\nSoy sauce\nGinger\nGarlic\nVegetables",
+                        instructions: "1. Cut chicken into strips\n2. Stir fry chicken\n3. Add vegetables\n4. Add sauce and serve"
+                    },
+                    {
+                        id: Date.now() + 3,
+                        name: "Greek Salad",
+                        cuisine: "Mediterranean",
+                        prepTime: 15,
+                        servings: 4,
+                        ingredients: "4 tomatoes\n1 cucumber\n1 red onion\n200g feta cheese\nOlives\nOlive oil\nOregano",
+                        instructions: "1. Chop vegetables\n2. Add feta and olives\n3. Drizzle with olive oil\n4. Season with oregano"
+                    }
+                ];
+                saveData();
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem('mealPlannerData', JSON.stringify({
+                recipes,
+                mealPlan
+            }));
+        }
+
+        // Tab navigation
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+            
+            if (tabName === 'recipes') renderRecipes();
+            if (tabName === 'planner') renderWeekPlanner();
+            if (tabName === 'shopping') renderShoppingList();
+        }
+
+        // Recipe functions
+        function addRecipe(e) {
+            e.preventDefault();
+            
+            const recipe = {
+                id: Date.now(),
+                name: document.getElementById('recipeName').value,
+                cuisine: document.getElementById('recipeCuisine').value,
+                prepTime: parseInt(document.getElementById('recipePrepTime').value),
+                servings: parseInt(document.getElementById('recipeServings').value),
+                ingredients: document.getElementById('recipeIngredients').value,
+                instructions: document.getElementById('recipeInstructions').value
+            };
+            
+            recipes.push(recipe);
+            saveData();
+            
+            e.target.reset();
+            alert('Recipe added successfully!');
+            showTab('recipes');
+        }
+
+        function renderRecipes() {
+            const grid = document.getElementById('recipeGrid');
+            
+            if (recipes.length === 0) {
+                grid.innerHTML = '<div class="empty-state"><p>📝 No recipes yet. Add your first recipe!</p></div>';
+                return;
+            }
+            
+            grid.innerHTML = recipes.map(recipe => `
+                <div class="recipe-card" onclick="viewRecipe(${recipe.id})">
+                    <div class="recipe-name">${recipe.name}</div>
+                    <div class="recipe-meta">
+                        <span>🌍 ${recipe.cuisine}</span>
+                        <span>⏱️ ${recipe.prepTime} min</span>
+                        <span>👥 ${recipe.servings}</span>
+                    </div>
+                    <button onclick="event.stopPropagation(); quickAddRecipe(${recipe.id})" class="btn btn-small">
+                        Add to Plan
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function viewRecipe(id) {
+            const recipe = recipes.find(r => r.id === id);
+            if (!recipe) return;
+            
+            document.getElementById('modalRecipeName').textContent = recipe.name;
+            document.getElementById('modalRecipeContent').innerHTML = `
+                <div style="color: #666; margin-bottom: 20px;">
+                    <strong>🌍 ${recipe.cuisine}</strong> • 
+                    <strong>⏱️ ${recipe.prepTime} min</strong> • 
+                    <strong>👥 ${recipe.servings} servings</strong>
+                </div>
+                <h3 style="margin-top: 20px;">Ingredients:</h3>
+                <div style="white-space: pre-wrap; background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 10px;">${recipe.ingredients}</div>
+                <h3 style="margin-top: 20px;">Instructions:</h3>
+                <div style="white-space: pre-wrap; background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 10px;">${recipe.instructions}</div>
+                <div style="margin-top: 20px; display: flex; gap: 10px;">
+                    <button onclick="quickAddRecipe(${recipe.id}); closeModal();" class="btn">Add to Meal Plan</button>
+                    <button onclick="deleteRecipe(${recipe.id})" class="btn-secondary btn" style="background: #e74c3c;">Delete Recipe</button>
+                </div>
+            `;
+            
+            document.getElementById('recipeModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('recipeModal').classList.remove('active');
+        }
+
+        function deleteRecipe(id) {
+            if (confirm('Delete this recipe?')) {
+                recipes = recipes.filter(r => r.id !== id);
+                mealPlan = mealPlan.filter(m => m.recipeId !== id);
+                saveData();
+                closeModal();
+                renderRecipes();
+            }
+        }
+
+        // Week planner functions
+        function getWeekDates() {
+            const today = new Date();
+            const day = today.getDay();
+            const diff = today.getDate() - day + (day === 0 ? -6 : 1);
+            const monday = new Date(today.setDate(diff));
+            
+            const dates = [];
+            for (let i = 0; i < 7; i++) {
+                const date = new Date(monday);
+                date.setDate(monday.getDate() + i);
+                dates.push(date);
+            }
+            
+            return dates;
+        }
+
+        function formatDate(date) {
+            return date.toISOString().split('T')[0];
+        }
+
+        function renderWeekPlanner() {
+            const dates = getWeekDates();
+            const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+            const mealTypes = ['Breakfast', 'Lunch', 'Dinner'];
+            
+            document.getElementById('weekRange').textContent = 
+                `Week of ${dates[0].toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`;
+            
+            const planner = document.getElementById('weekPlanner');
+            planner.innerHTML = dates.map((date, i) => {
+                const dateStr = formatDate(date);
+                return `
+                    <div class="day-card">
+                        <div class="day-header">${dayNames[i]}<br><small>${date.getDate()}</small></div>
+                        ${mealTypes.map(mealType => {
+                            const meal = mealPlan.find(m => m.date === dateStr && m.mealType === mealType);
+                            if (meal) {
+                                const recipe = recipes.find(r => r.id === meal.recipeId);
+                                return `
+                                    <div class="meal-slot filled">
+                                        <div class="meal-type">${mealType}</div>
+                                        <div class="meal-name">${recipe ? recipe.name : 'Unknown'}</div>
+                                        <button onclick="removeMeal('${dateStr}', '${mealType}')" 
+                                                class="btn-secondary btn-small" style="margin-top: 5px;">
+                                            Remove
+                                        </button>
+                                    </div>
+                                `;
+                            } else {
+                                return `
+                                    <div class="meal-slot" onclick="openMealModal('${dateStr}', '${mealType}')">
+                                        <div class="meal-type">${mealType}</div>
+                                        <div style="text-align: center; color: #999; font-size: 0.85em; margin-top: 10px;">
+                                            + Add meal
+                                        </div>
+                                    </div>
+                                `;
+                            }
+                        }).join('')}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function quickAddRecipe(recipeId) {
+            const dates = getWeekDates();
+            const mealTypes = ['Breakfast', 'Lunch', 'Dinner'];
+            
+            for (const date of dates) {
+                const dateStr = formatDate(date);
+                for (const mealType of mealTypes) {
+                    if (!mealPlan.find(m => m.date === dateStr && m.mealType === mealType)) {
+                        mealPlan.push({ date: dateStr, mealType, recipeId });
+                        saveData();
+                        if (document.getElementById('planner').classList.contains('active')) {
+                            renderWeekPlanner();
+                        }
+                        return;
+                    }
+                }
+            }
+            
+            alert('Week is fully planned! Remove a meal to add this recipe.');
+        }
+
+        function openMealModal(date, mealType) {
+            selectedMealSlot = { date, mealType };
+            
+            const modalContent = document.getElementById('mealModalRecipes');
+            modalContent.innerHTML = `
+                <div style="max-height: 400px; overflow-y: auto;">
+                    ${recipes.map(recipe => `
+                        <div class="recipe-card" onclick="addMealToPlan(${recipe.id})" 
+                             style="margin-bottom: 10px;">
+                            <div class="recipe-name">${recipe.name}</div>
+                            <div class="recipe-meta">
+                                <span>🌍 ${recipe.cuisine}</span>
+                                <span>⏱️ ${recipe.prepTime} min</span>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            
+            document.getElementById('mealModal').classList.add('active');
+        }
+
+        function closeMealModal() {
+            document.getElementById('mealModal').classList.remove('active');
+            selectedMealSlot = null;
+        }
+
+        function addMealToPlan(recipeId) {
+            if (selectedMealSlot) {
+                mealPlan.push({
+                    date: selectedMealSlot.date,
+                    mealType: selectedMealSlot.mealType,
+                    recipeId
+                });
+                saveData();
+                renderWeekPlanner();
+                closeMealModal();
+            }
+        }
+
+        function removeMeal(date, mealType) {
+            mealPlan = mealPlan.filter(m => !(m.date === date && m.mealType === mealType));
+            saveData();
+            renderWeekPlanner();
+        }
+
+        // Shopping list
+        function renderShoppingList() {
+            const dates = getWeekDates();
+            const startDate = formatDate(dates[0]);
+            const endDate = formatDate(dates[6]);
+            
+            const weekMeals = mealPlan.filter(m => m.date >= startDate && m.date <= endDate);
+            const ingredients = new Set();
+            
+            weekMeals.forEach(meal => {
+                const recipe = recipes.find(r => r.id === meal.recipeId);
+                if (recipe) {
+                    recipe.ingredients.split('\n').forEach(ing => {
+                        if (ing.trim()) ingredients.add(ing.trim());
+                    });
+                }
+            });
+            
+            const list = document.getElementById('shoppingList');
+            
+            if (ingredients.size === 0) {
+                list.innerHTML = '<div class="empty-state"><p>📋 Add meals to your planner to generate a shopping list!</p></div>';
+                return;
+            }
+            
+            list.innerHTML = Array.from(ingredients).sort().map((ing, i) => `
+                <div class="ingredient-item" id="ing-${i}">
+                    <input type="checkbox" id="check-${i}" 
+                           onchange="toggleIngredient(${i})">
+                    <label for="check-${i}" style="flex: 1; cursor: pointer;">${ing}</label>
+                </div>
+            `).join('');
+        }
+
+        function toggleIngredient(index) {
+            const item = document.getElementById(`ing-${index}`);
+            item.classList.toggle('checked');
+        }
+
+        // Export functions
+        function exportToCalendar() {
+            const dates = getWeekDates();
+            const startDate = formatDate(dates[0]);
+            const endDate = formatDate(dates[6]);
+            
+            const weekMeals = mealPlan.filter(m => m.date >= startDate && m.date <= endDate);
+            
+            const mealTimes = {
+                'Breakfast': '08:00:00',
+                'Lunch': '12:00:00',
+                'Dinner': '18:00:00'
+            };
+            
+            let events = [];
+            
+            weekMeals.forEach(meal => {
+                const recipe = recipes.find(r => r.id === meal.recipeId);
+                if (!recipe) return;
+                
+                const dateTime = new Date(meal.date + 'T' + mealTimes[meal.mealType]);
+                const endTime = new Date(dateTime.getTime() + (recipe.prepTime || 30) * 60000);
+                
+                const dtstart = dateTime.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+                const dtend = endTime.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+                const dtstamp = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+                
+                events.push(`BEGIN:VEVENT
+UID:${dtstart}-${recipe.name.replace(/\s+/g, '-')}@mealplanner
+DTSTAMP:${dtstamp}
+DTSTART:${dtstart}
+DTEND:${dtend}
+SUMMARY:${meal.mealType}: ${recipe.name}
+DESCRIPTION:Prep time: ${recipe.prepTime || 30} minutes
+LOCATION:Home
+END:VEVENT`);
+            });
+            
+            const ical = `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Meal Planner//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Meal Plan
+X-WR-TIMEZONE:UTC
+${events.join('\n')}
+END:VCALENDAR`;
+            
+            downloadFile(ical, `meal_plan_${startDate}.ics`, 'text/calendar');
+        }
+
+        function exportToReminders() {
+            const dates = getWeekDates();
+            const startDate = formatDate(dates[0]);
+            const endDate = formatDate(dates[6]);
+            
+            const weekMeals = mealPlan.filter(m => m.date >= startDate && m.date <= endDate);
+            const ingredients = new Set();
+            
+            weekMeals.forEach(meal => {
+                const recipe = recipes.find(r => r.id === meal.recipeId);
+                if (recipe) {
+                    recipe.ingredients.split('\n').forEach(ing => {
+                        if (ing.trim()) ingredients.add(ing.trim());
+                    });
+                }
+            });
+            
+            const todos = Array.from(ingredients).map((ing, i) => {
+                const dtstamp = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+                return `BEGIN:VTODO
+UID:shopping-${i}@mealplanner
+DTSTAMP:${dtstamp}
+SUMMARY:${ing}
+STATUS:NEEDS-ACTION
+PRIORITY:5
+END:VTODO`;
+            });
+            
+            const ical = `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Meal Planner//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Shopping List
+${todos.join('\n')}
+END:VCALENDAR`;
+            
+            downloadFile(ical, `shopping_list_${startDate}.ics`, 'text/calendar');
+        }
+
+        function downloadFile(content, filename, mimeType) {
+            const blob = new Blob([content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            alert(`Downloaded! Open the file to import to Apple Calendar/Reminders.`);
+        }
+
+        // Initialize
+        initializeData();
+        renderRecipes();
+    </script>
+</body>
+</html>
